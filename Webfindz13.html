@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FindzWeb V10.0.3 - Kode 15</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#34c759">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+<style>
+:root{--bg:#f2f2f7;--card:#fff;--text:#000;--muted:#8a8a8e;--green:#34c759;--border:rgba(0,0,0,.06);--wa:#25D366;--shadow:0 8px 24px rgba(0,0,0,.06);--radius:28px}
+[data-theme="dark"]{--bg:#000;--card:#1c1c1e;--text:#fff;--muted:#98989f;--border:rgba(255,255,255,.08);--shadow:0 10px 30px rgba(0,0,0,.5)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display",system-ui,sans-serif;background:var(--bg);color:var(--text)}
+body.locked{overflow:hidden}
+.container{max-width:430px;margin:auto;padding:0 16px 120px}
+header{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.85);backdrop-filter:blur(20px);display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:.5px solid var(--border)}
+[data-theme="dark"] header{background:rgba(0,0,0,.8)}
+.logo{font-weight:800;font-size:20px;letter-spacing:-.8px}.logo span{color:var(--green)}
+.hamburger{width:40px;height:40px;border-radius:12px;border:none;background:rgba(120,120,128,.12);font-size:20px;cursor:pointer;color:var(--text)}
+.theme-btn{width:36px;height:36px;border-radius:50%;border:none;background:rgba(120,120,128,.12);color:var(--text);font-size:16px;cursor:pointer}
+#scriptsidebarOverlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:80;display:none}
+#sidebarOverlay.open{display:block}
+#sidebar{position:fixed;top:0;left:0;bottom:0;width:280px;background:var(--card);z-index:90;transform:translateX(-100%);transition:transform .3s cubic-bezier(.34,1.56,.64,1);display:flex;flex-direction:column;box-shadow:20px 0 60px rgba(0,0,0,.3);overflow-y:auto}
+#sidebar.open{transform:translateX(0)}
+.side-head{padding:20px 18px 14px;border-bottom:.5px solid var(--border);background:#000;color:#fff}
+.side-menu{padding:10px}
+.side-item{display:flex;align-items:center;gap:12px;padding:13px 12px;border-radius:14px;cursor:pointer;font-size:15px;font-weight:600;border:none;background:transparent;width:100%;text-align:left;color:var(--text)}
+.side-item:hover{background:rgba(120,120,128,.12)}
+.side-item.active{background:rgba(52,199,89,.12);color:var(--green)}
+.side-item .ico{font-size:20px;width:28px;text-align:center}
+.side-badge{margin-left:auto;background:#ff3b30;color:#fff;font-size:10px;padding:3px 7px;border-radius:999px;font-weight:700}
+.side-badge.green{background:var(--green)}
+.page{display:none;animation:fadeUp .35s ease}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes popIn{0%{opacity:0;transform:scale(.9) translateY(15px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes shine{0%{left:-100%}100%{left:200%}}
+@keyframes gradientMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+.hero{text-align:center;padding:28px 4px 8px}
+.social-proof{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:14px}
+.social-proof span{background:var(--card);border:.5px solid var(--border);padding:6px 11px;border-radius:999px;font-size:12px;font-weight:600;box-shadow:var(--shadow)}
+.hero h1{font-size:34px;line-height:1.05;margin:10px 0;font-weight:800;letter-spacing:-1.2px}
+.hero h1 span{color:var(--green)}
+.hero p{color:var(--muted);font-size:15px;line-height:1.5}
+.btn{display:block;text-align:center;padding:16px;border-radius:16px;font-weight:700;font-size:16px;cursor:pointer;border:none;width:100%}
+.btn:active{transform:scale(.97);opacity:.85}
+.btn-green{background:var(--green);color:#fff;box-shadow:0 8px 20px rgba(52,199,89,.35);position:relative;overflow:hidden}
+.btn-green::after{content:'';position:absolute;top:0;left:-100%;width:50%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);transform:skewX(-20deg);animation:shine 2.5s infinite}
+.btn-dark{background:#000;color:#fff}[data-theme="dark"] .btn-dark{background:#fff;color:#000}
+.btn-outline{background:var(--card);border:.5px solid var(--border);color:var(--text);box-shadow:var(--shadow)}
+.badge-pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:800}
+.badge-newbie{background:#e5e5ea;color:#555}.badge-trusted{background:#d1f7d9;color:#1a7a2e}.badge-pro{background:#ffe9a8;color:#8a6d00}.badge-legend{background:#000;color:#FFCC00}
+.status-pill{padding:6px 12px;border-radius:999px;font-size:12px;font-weight:800;display:inline-block}
+.st-menunggu{background:#FFF3CD;color:#856404}.st-antri{background:#D1ECF1;color:#0c5460}.st-kerjain{background:#FFE0B2;color:#e65100}.st-revisi{background:#E1BEE7;color:#6a1b9a}.st-selesai{background:#D4EDDA;color:#155724}
+.profile-pic{width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid var(--green);background:#ddd;display:block;margin:0 auto}
+</style>
+<!-- PATCH HALUS V10.0.3.1 - FONT NYATU + SUPER SMOOTH -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{
+  font-family:'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif !important;
+  -webkit-font-smoothing:antialiased !important;
+  -moz-osx-font-smoothing:grayscale !important;
+  text-rendering:optimizeLegibility !important;
+  letter-spacing:-0.01em;
+}
+body{
+  font-weight:500;
+  line-height:1.55;
+  -webkit-tap-highlight-color:transparent;
+  overscroll-behavior:none;
+}
+h1,h2,b,.section-title,.price,.logo{
+  font-weight:800 !important;
+  letter-spacing:-0.04em !important;
+  line-height:1.05 !important;
+}
+p, span, li, input, textarea, select, button{
+  letter-spacing:-0.01em;
+  line-height:1.55;
+}
+input, textarea, select{
+  font-weight:500 !important;
+  font-size:15px !important;
+}
+input::placeholder, textarea::placeholder{
+  color:#aeaeb2 !important;
+  font-weight:400 !important;
+}
+
+/* SMOOTH SEMUA ANIMASI - KAYA IPHONE */
+.page{animation:fadeUp .45s cubic-bezier(.22,1,.36,1) both !important}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.card, .step, .faq, .leader-row, .galeri-card{
+  transition:transform .35s cubic-bezier(.22,1,.36,1), box-shadow .35s ease !important;
+  will-change:transform;
+}
+.card:active, .step:active{
+  transform:scale(.98) !important;
+}
+.btn{
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease, opacity .2s !important;
+  letter-spacing:-0.02em !important;
+  font-weight:700 !important;
+}
+.btn:active{transform:scale(.96) !important}
+.side-item, .bottom-nav button, .filter button, .sub-filter button{
+  transition:all .25s cubic-bezier(.22,1,.36,1) !important;
+}
+#sidebar{transition:transform .45s cubic-bezier(.22,1,.36,1) !important}
+#sidebarOverlay{transition:opacity .3s ease !important}
+header{backdrop-filter:blur(24px) saturate(180%) !important;-webkit-backdrop-filter:blur(24px) saturate(180%) !important}
+.bottom-nav{backdrop-filter:blur(24px) saturate(180%) !important;-webkit-backdrop-filter:blur(24px) saturate(180%) !important}
+.hero h1{font-size:36px !important;line-height:1.02 !important}
+.hero p{font-size:15.5px !important;color:var(--muted);font-weight:500}
+.price{letter-spacing:-0.06em !important}
+.badge-pill, .status-pill, .tag, .side-badge{
+  letter-spacing:-0.01em !important;
+  font-weight:700 !important;
+}
+::-webkit-scrollbar{width:0;height:0}
+*{scrollbar-width:none}
+html{scroll-behavior:smooth}
+</style>
+<!-- FIX TEMA HITAM V10.0.3.2 - BIAR NYATU LAGI -->
+<style>
+/* INI YANG BIKIN PUTIH TADI, KITA BENERIN */
+[data-theme="dark"] .bottom-nav{
+  background:rgba(0,0,0,.85) !important;
+  backdrop-filter:blur(24px) saturate(180%) !important;
+  border-top:.5px solid rgba(255,255,255,.08) !important;
+}
+[data-theme="dark"] .bottom-nav button{
+  color:#98989f !important;
+  background:transparent !important;
+}
+[data-theme="dark"] .bottom-nav button.active{
+  color:#34c759 !important;
+  background:rgba(52,199,89,.12) !important;
+}
+[data-theme="dark"] header{
+  background:rgba(0,0,0,.8) !important;
+  border-bottom:.5px solid rgba(255,255,255,.08) !important;
+}
+
+/* BAGIAN BARU - PROFIL / AFILIASI / PESANAN - BIAR IKUT TEMA */
+[data-theme="dark"] .btn-outline{
+  background:#1c1c1e !important;
+  color:#fff !important;
+  border:.5px solid rgba(255,255,255,.08) !important;
+}
+[data-theme="light"] .btn-outline{
+  background:#fff !important;
+  color:#000 !important;
+  border:.5px solid rgba(0,0,0,.06) !important;
+}
+
+/* TOMBOL SHARE AFILIASI YANG TADI PUTIH PERMANEN - INI BIANGNYA */
+[data-theme="dark"] #page-afiliasi .btn-outline{
+  background:#fff !important;
+  color:#000 !important;
+}
+/* Biar di dark mode dia tetep item-putih yang nyatu, bukan putih nyala */
+[data-theme="dark"] #page-afiliasi > div:first-of-type{
+  background:linear-gradient(135deg,#1c1c1e,#2c2c2e) !important;
+}
+
+/* CARD & INPUT BARU - JANGAN PUTIH DI DARK MODE */
+[data-theme="dark"] input, [data-theme="dark"] textarea, [data-theme="dark"] select{
+  background:#2c2c2e !important;
+  color:#fff !important;
+  border:.5px solid rgba(255,255,255,.08) !important;
+}
+[data-theme="light"] input, [data-theme="light"] textarea, [data-theme="light"] select{
+  background:#fff !important;
+  color:#000 !important;
+  border:.5px solid rgba(0,0,0,.06) !important;
+}
+
+/* FIX SEMUA DIV YANG MASIH PAKE background:var(--card) TAPI KENA TIMPA */
+[data-theme="dark"] div[style*="background:var(--card)"]{
+  background:#1c1c1e !important;
+}
+</style>
+<!-- BALIKIN DETAIL KECIL V10.0.3.3 - FLOAT + SHINE + GRADIENT -->
+<style>
+/* 1. LOGO CHAT WA BAWAH - NAIK TURUN LAGI */
+.float-wa, div[onclick="waUmum()"][style*="position:fixed;bottom:82px"]{
+  animation:floaty 2.5s ease-in-out infinite !important;
+  will-change:transform;
+}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+
+/* 2. TOMBOL IJO ADA KILAU JALAN LAGI */
+.btn-green{
+  position:relative !important;
+  overflow:hidden !important;
+}
+.btn-green::after{
+  content:'' !important;
+  position:absolute !important;
+  top:0; left:-100%;
+  width:50%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent) !important;
+  transform:skewX(-20deg);
+  animation:shine 2.5s infinite !important;
+  pointer-events:none;
+}
+@keyframes shine{0%{left:-100%}100%{left:200%}}
+
+/* 3. PREVIEW PAKET WARNA GERAK LAGI */
+.preview, div[style*="gradientMove"], div[style*="linear-gradient(135deg,#000"]{
+  background-size:200% 200% !important;
+  animation:gradientMove 4s ease infinite !important;
+}
+@keyframes gradientMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+/* 4. CARD MUNCUL MENTAL LAGI */
+.card, .step, .faq, .leader-row{
+  animation:popIn .5s cubic-bezier(.34,1.56,.64,1) both !important;
+}
+@keyframes popIn{0%{opacity:0;transform:scale(.9) translateY(15px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+
+/* 5. BOTTOM NAV JANGAN DIEM, KASIH EFEK DIPENCET */
+.bottom-nav button:active{transform:scale(.9) !important}
+.bottom-nav button.active{transform:scale(1.02) !important}
+
+/* 6. HERO SOCIAL PROOF BIAR GA KAKU */
+.social-proof span{animation:popIn .6s cubic-bezier(.34,1.56,.64,1) both !important}
+
+/* 7. JANGAN MATIIN ANIMASI LAIN LAGI */
+*{animation-fill-mode:both}
+</style>
+</head>
+<body class="locked">
+<div id="authGate" style="position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.92);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;padding:20px"><div style="background:#1c1c1e;border:1px solid rgba(255,255,255,.12);border-radius:28px;padding:26px;width:100%;max-width:380px"><div style="text-align:center"><div style="font-size:28px;font-weight:800;color:#fff">FINDZ<span style="color:#34c759">WEB</span> <span style="font-size:10px;background:#ff3b30;color:#fff;padding:3px 7px;border-radius:6px">V10.0.3</span></div><p style="color:#fff;font-weight:700;margin:12px 0 4px">👋 Selamat Datang!</p><p style="color:#aaa;font-size:13px;line-height:1.5;margin:0">Login dulu ya, cuma 10 detik.<br>Ga perlu email!</p></div><label style="color:#aaa;font-size:13px;display:block;margin-top:18px">Nama Kamu</label><input id="gateNama" placeholder="cth: Budi" style="width:100%;padding:15px;border-radius:14px;background:#2c2c2e;color:#fff;border:none;margin:6px 0 10px"><label style="color:#aaa;font-size:13px">Password</label><input id="gatePw" type="password" placeholder="cth: 12345" style="width:100%;padding:15px;border-radius:14px;background:#2c2c2e;color:#fff;border:none;margin:6px 0 10px"><button class="btn btn-green" onclick="loginV10()">Masuk / Daftar Otomatis 🚀</button><p id="gateError" style="color:#ff3b30;font-size:13px;text-align:center;display:none;margin-top:10px"></p><p style="font-size:11px;color:#666;text-align:center;margin-top:12px">© FindzWeb V10.0.3 - Kode 15 - Bengkulu</p></div></div>
+<div id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+<div id="sidebar">
+<div class="side-head"><div style="font-size:20px;font-weight:800">FINDZ<span style="color:#34c759">WEB</span> <span style="font-size:10px;background:#ff3b30;color:#fff;padding:3px 6px;border-radius:6px">V10.0.3</span></div>
+<div style="display:flex;align-items:center;gap:10px;margin-top:12px"><img id="sideAvatarImg" src="" style="width:44px;height:44px;border-radius:50%;object-fit:cover;background:#34c759;display:none"><div id="sideAvatar" style="width:44px;height:44px;border-radius:50%;background:#34c759;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px">?</div><div><b id="sideNama" style="font-size:15px">Guest</b><br><span id="sideRole" style="font-size:12px;color:#aaa">👤 MEMBER</span><br><span id="sideBadge" class="badge-pill badge-newbie" style="margin-top:4px">🌱 NEWBIE</span></div></div>
+<div id="sidePoin" style="margin-top:12px;background:rgba(255,255,255,.12);border-radius:12px;padding:10px;font-size:13px;font-weight:700">⭐ Poin: 0 • Rank -</div></div>
+<div class="side-menu">
+<button class="side-item active" data-page="home" onclick="goPage('home')"><span class="ico">🏠</span> Beranda <span class="side-badge green">HOME</span></button>
+<button class="side-item" data-page="paket" onclick="goPage('paket')"><span class="ico">📦</span> Paket & Harga <span class="side-badge">15k</span></button>
+<button class="side-item" data-page="profil" onclick="goPage('profil')"><span class="ico">👤</span> Profil Saya <span class="side-badge green">BARU</span></button>
+<button class="side-item" data-page="afiliasi" onclick="goPage('afiliasi')"><span class="ico">💰</span> Afiliasi Saya <span class="side-badge">10K</span></button>
+<button class="side-item" data-page="pesanan" onclick="goPage('pesanan')"><span class="ico">📦</span> Pesanan Saya <span class="side-badge green" id="badgePesanan">ACC</span></button>
+<button class="side-item" data-page="leaderboard" onclick="goPage('leaderboard')"><span class="ico">🏆</span> Leaderboard <span class="side-badge green">TOP</span></button>
+<button class="side-item" data-page="galeri" onclick="goPage('galeri')"><span class="ico">🎁</span> Galeri Member</button>
+<button class="side-item" data-page="chat" onclick="goPage('chat')"><span class="ico">💬</span> Global Chat <span class="side-badge">LIVE</span></button>
+<button class="side-item" data-page="order" onclick="goPage('order')"><span class="ico">📝</span> Form Order</button>
+<button class="side-item" data-page="faq" onclick="goPage('faq')"><span class="ico">❓</span> FAQ / Bantuan</button>
+<div style="height:1px;background:var(--border);margin:10px 0"></div>
+<button class="side-item" onclick="toggleTheme()"><span class="ico">🌙</span> Ganti Tema</button>
+<button class="side-item" onclick="waUmum()"><span class="ico">💬</span> Chat WA Findz</button>
+<button class="side-item" onclick="logoutV10()" style="color:#ff3b30"><span class="ico">🚪</span> Keluar / Ganti Akun</button>
+</div>
+<div style="padding:14px;text-align:center;color:var(--muted);font-size:11px">© FindzWeb V10.0.3 - Kode 15<br>Firebase Live • 15 Bagian</div>
+</div>
+<header><button class="hamburger" onclick="toggleSidebar(true)">☰</button><div class="logo">FINDZ<span>WEB</span> <span style="font-size:10px;background:#ff3b30;color:#fff;padding:3px 7px;border-radius:6px">V10.0.3</span></div><div style="display:flex;gap:8px;align-items:center"><span id="headerUser" style="font-size:12px;font-weight:700"></span><button class="theme-btn" onclick="toggleTheme()" id="themeBtn">☀️</button></div></header>
+<div class="container" style="padding-bottom:90px">
+<div id="page-home" class="page active">
+<div class="hero">
+<div class="social-proof"><span>⭐ 4.9 / 5.0</span><span>🔥 120+ Web Dibuat</span><span>📍 Bengkulu</span><span>💬 <span id="heroOnline">--</span> Online</span><span id="heroRole" style="background:#34c759;color:#fff">👤 MEMBER</span></div>
+<h1>Bikin Website<br><span>Cuma 15k,</span><br>Jadi 1 Hari!</h1>
+<p>Ga perlu ribet coding. Pilih paket, isi form, bayar QRIS, web langsung dibikinin manual sama Findz.</p>
+<button class="btn btn-green" style="margin-top:14px" onclick="goPage('paket')">Lihat Paket 👇</button>
+<button class="btn btn-outline" style="margin-top:8px" onclick="goPage('chat')">💬 Masuk Global Chat - Live Firebase</button>
+<button class="btn btn-outline" style="margin-top:8px" onclick="goPage('afiliasi')">💰 Afiliasi - Share Link Dapet 10K!</button>
+<div id="myPoinBox" style="display:none;background:linear-gradient(135deg,#FFCC00,#FF9500);color:#000;border-radius:16px;padding:12px;margin-top:12px;font-weight:800;font-size:14px">⭐ Poin Kamu: <span id="myPoin">0</span> • <span id="myRank">Rank -</span> • <span id="myVipLabel">MEMBER</span> • <span id="myBadgeLabel">🌱 NEWBIE</span></div>
+<div id="infoOwnerBox" style="display:none;background:rgba(255,204,0,.15);border:1px solid #FFCC00;border-radius:16px;padding:12px;margin-top:12px;text-align:left"><b>📢 INFO DARI OWNER:</b><p id="infoOwnerText" style="font-size:13px;margin:6px 0 0;line-height:1.5"></p><span id="infoOwnerBy" style="font-size:11px;color:var(--muted)"></span></div>
+<div id="verifyBox" style="display:none;background:rgba(255,204,0,.15);border:1px solid #FFCC00;border-radius:16px;padding:12px;margin-top:12px;text-align:left"><b style="font-size:13px">🔒 Akun Belum Terverifikasi</b><p style="font-size:12px;color:var(--muted);margin:4px 0 8px">Verifikasi via WA biar dapet centang biru ✅</p><button class="btn btn-green" style="padding:10px;font-size:13px" onclick="mintaVerifikasi()">✅ Minta Verifikasi WA</button></div>
+<div id="verifiedBadge" style="display:none;background:rgba(52,199,89,.12);border-radius:16px;padding:10px;margin-top:12px;font-size:13px;font-weight:700;color:var(--green)">✅ Akun Terverifikasi!</div>
+</div>
+<div class="section-title">Kenapa FindzWeb? 🔥</div>
+<div style="background:var(--card);border:.5px solid var(--border);border-radius:18px;padding:14px;display:flex;gap:12px;margin-bottom:10px;box-shadow:var(--shadow)"><b>⚡</b><div><b>Jadi 1 Hari - Dikerjain Manual</b><br><span style="color:var(--muted);font-size:13px">Bukan template! Dikerjain satu-satu sama Findz.</span></div></div>
+<div style="background:var(--card);border:.5px solid var(--border);border-radius:18px;padding:14px;display:flex;gap:12px;margin-bottom:10px;box-shadow:var(--shadow)"><b>💰</b><div><b>Cuma 15k + Afiliasi 10K</b><br><span style="color:var(--muted);font-size:13px">Share link, dapet komisi.</span></div></div>
+<div style="background:var(--card);border:.5px solid var(--border);border-radius:18px;padding:14px;display:flex;gap:12px;margin-bottom:10px;box-shadow:var(--shadow)"><b>🏆</b><div><b>Badge & Level</b><br><span style="color:var(--muted);font-size:13px">Newbie -> Trusted -> Pro -> Legend</span></div></div>
+<button class="btn btn-green" onclick="goPage('paket')">Pesan Sekarang - Mulai 15k 🚀</button>
+</div>
+<div id="page-profil" class="page">
+<div class="section-title">👤 Profil Saya</div>
+<div style="background:var(--card);border:.5px solid var(--border);border-radius:28px;padding:22px;text-align:center;box-shadow:var(--shadow)">
+<img id="profilFotoImg" class="profile-pic" src="" style="display:none">
+<div id="profilFotoHuruf" style="width:90px;height:90px;border-radius:50%;background:#34c759;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:36px;margin:0 auto">?</div>
+<b id="profilNama" style="font-size:18px;display:block;margin-top:10px">-</b>
+<span id="profilBadge" class="badge-pill badge-newbie">🌱 NEWBIE</span><br>
+<span id="profilPoin" style="font-size:13px;color:var(--muted)">⭐ Poin: 0 • Rank -</span><br><br>
+<label style="font-size:13px;color:var(--muted)">Ganti Foto Profil (Max 2MB, JPG/PNG)</label>
+<input type="file" id="inputFotoProfil" accept="image/*" onchange="previewFotoProfil(this)">
+<button class="btn btn-green" style="padding:12px;font-size:14px;margin-top:8px" onclick="simpanFotoProfil()">💾 Simpan Foto Profil</button>
+<button class="btn btn-outline" style="padding:12px;font-size:14px;margin-top:8px" onclick="hapusFotoProfil()">🗑️ Hapus Foto - Balik ke Huruf</button>
+<p style="font-size:11px;color:var(--muted);margin-top:8px">Foto lu bakal muncul di Sidebar, Leaderboard, Galeri & Chat. Foto disimpan sebagai link / base64 kecil.</p>
+</div>
+<div style="background:var(--card);border:.5px solid var(--border);border-radius:18px;padding:14px;margin-top:12px;box-shadow:var(--shadow)"><b>📊 Statistik Kamu</b><p style="font-size:13px;color:var(--muted);line-height:1.7;margin:8px 0 0" id="profilStat">Loading...</p></div>
+</div>
+<div id="page-afiliasi" class="page">
+<div class="section-title">💰 Afiliasi FindzWebs</div>
+<p style="font-size:13px;color:var(--muted);margin-top:-8px">Share link lu, kalo ada yang order lewat link lu, lu dapet 10K! Komisi cair kalo orderan udah di-ACC Owner.</p>
+<div style="background:linear-gradient(135deg,#000,#333);color:#fff;border-radius:22px;padding:18px;box-shadow:var(--shadow)"><b style="font-size:13px">🔗 LINK AFILIASI KAMU:</b><p id="linkAfiliasi" style="background:rgba(255,255,255,.12);padding:12px;border-radius:12px;font-size:13px;word-break:break-all;margin:10px 0">Loading...</p><button class="btn btn-green" style="padding:12px;font-size:14px" onclick="salinLinkAfiliasi()">📋 Salin Link</button><button class="btn btn-outline" style="padding:12px;font-size:14px;margin-top:8px;background:#fff;color:#000" onclick="shareAfiliasiWA()">📤 Share ke WA Story</button></div>
+<div style="display:flex;gap:10px;margin-top:12px"><div style="flex:1;background:var(--card);border-radius:16px;padding:14px;text-align:center;box-shadow:var(--shadow)"><b style="font-size:20px" id="afilKlik">0</b><br><span style="font-size:12px;color:var(--muted)">Total Klik</span></div><div style="flex:1;background:var(--card);border-radius:16px;padding:14px;text-align:center;box-shadow:var(--shadow)"><b style="font-size:20px" id="afilOrder">0</b><br><span style="font-size:12px;color:var(--muted)">Order Masuk</span></div><div style="flex:1;background:var(--card);border-radius:16px;padding:14px;text-align:center;box-shadow:var(--shadow)"><b style="font-size:20px;color:#34c759" id="afilKomisi">Rp 0</b><br><span style="font-size:12px;color:var(--muted)">Komisi</span></div></div>
+<div style="background:var(--card);border:.5px solid var(--border);border-radius:18px;padding:14px;margin-top:12px;box-shadow:var(--shadow)"><b style="font-size:14px">📋 Riwayat Afiliasi</b><div id="afilList" style="font-size:13px;color:var(--muted);margin-top:8px">Belum ada yang order lewat link lu. Share terus!</div><button class="btn btn-green" style="padding:12px;font-size:14px;margin-top:10px" onclick="tarikKomisi()">💸 Tarik Komisi ke DANA</button></div>
+</div>
+<div id="page-pesanan" class="page">
+<div class="section-title">📦 Pesanan Saya - Status ACC</div>
+<p style="font-size:13px;color:var(--muted);margin-top:-8px">Disini lu bisa liat pesanan lu udah di-ACC belum, lagi antri apa lagi dikerjain.</p>
+<div id="pesananList"><p style="color:var(--muted);font-size:13px;text-align:center">Loading pesanan...</p></div>
+<div style="background:var(--card);border:.5px solid var(--border);border-radius:16px;padding:12px;margin-top:10px;font-size:13px"><b>Artinya Status:</b><br><span class="status-pill st-menunggu">MENUNGGU ACC</span> Bukti belum dicek Owner<br><span class="status-pill st-antri">LAGI ANTRI</span> Udah di-ACC, nunggu giliran<br><span class="status-pill st-kerjain">SEDANG DIKERJAIN</span> Lagi dibikinin sekarang!<br><span class="status-pill st-revisi">LAGI REVISI</span> Lagi diubah sesuai request lu<br><span class="status-pill st-selesai">SELESAI</span> Udah jadi, udah lunas!</div>
+<div id="ownerPanelPesanan" style="display:none;background:rgba(255,59,48,.05);border:1px solid #FF3B30;border-radius:18px;padding:14px;margin-top:12px"><b style="font-size:14px">🛡️ PANEL OWNER - ATUR PESANAN</b><p style="font-size:12px;color:var(--muted)">Ganti status + tulis info ke pembeli. Info langsung muncul di HP pembeli.</p><label>Nama Pembeli</label><input id="ownerTargetPesanan" placeholder="cth: Budi"><label>Status Baru</label><select id="ownerStatusBaru"><option value="menunggu">MENUNGGU ACC</option><option value="antri">SUDAH DI ACC - LAGI ANTRI</option><option value="dikerjain">SEDANG DIKERJAIN</option><option value="revisi">LAGI REVISI</option><option value="selesai">SELESAI</option></select><label>Info Buat Pembeli (Muncul di HP dia)</label><textarea id="ownerInfoText" rows="2" placeholder="cth: Woy Budi, web lu lagi gw kerjain nih, udah 50%"></textarea><button class="btn btn-dark" style="padding:12px;font-size:14px" onclick="ownerUpdatePesanan()">💾 Update Status + Info</button><div style="height:1px;background:var(--border);margin:12px 0"></div><label>Info Global Buat Semua Orang (Toko Tutup / Libur / Promo)</label><input id="ownerInfoGlobal" placeholder="cth: Hari ini toko PAUSE, besok lanjut lagi"><button class="btn btn-green" style="padding:12px;font-size:14px;margin-top:8px" onclick="ownerUpdateInfoGlobal()">📢 Kirim Info Global</button><label style="margin-top:12px">Buka / Tutup Toko</label><select id="ownerTokoStatus"><option value="buka">BUKA - Terima Order</option><option value="tutup">TUTUP - Lagi Capek / Libur</option></select><button class="btn btn-outline" style="padding:12px;font-size:14px;margin-top:8px" onclick="ownerUpdateToko()">🏪 Update Status Toko</button></div>
+</div>
+<div id="page-leaderboard" class="page">
+<div class="section-title">🏆 Leaderboard - Top Member</div>
+<p style="font-size:13px;color:var(--muted);margin-top:-8px">Chat = +1 poin • Order = +50 poin • Afiliasi Berhasil = +30 poin • Galeri = +20 poin</p>
+<div id="leaderList"><p style="color:var(--muted);font-size:13px;text-align:center">Loading leaderboard...</p></div>
+<div style="background:var(--card);border:1px solid #FFCC00;border-radius:16px;padding:12px;margin-top:8px;font-size:13px;line-height:1.7"><b>🎖️ BADGE & LEVEL FINDZWEBS:</b><br><span class="badge-pill badge-newbie">🌱 NEWBIE</span> Baru daftar, 0-9 poin<br><span class="badge-pill badge-trusted">🛡️ TRUSTED</span> 10-49 poin, udah verifikasi / pernah order<br><span class="badge-pill badge-pro">💎 PRO</span> 50-149 poin, sering order + afiliasi<br><span class="badge-pill badge-legend">👑 LEGEND</span> 150+ poin, Sultan Community!</div>
+</div>
+<div id="page-paket" class="page">
+<div class="section-title">Kamu Yang Mana?</div>
+<div id="tokoTutupBanner" style="display:none;background:#FF3B30;color:#fff;border-radius:14px;padding:12px;font-size:13px;font-weight:700;text-align:center;margin-bottom:12px">🏪 TOKO LAGI TUTUP - Buka lagi besok ya! Tetep bisa chat WA.</div>
+<div style="display:flex;background:rgba(120,120,128,.12);padding:3px;border-radius:14px;margin:22px 0"><button id="btn-muda" class="active" onclick="setKategori('muda')" style="flex:1;padding:10px;border-radius:11px;border:none;background:#fff;font-weight:700">Anak Muda</button><button id="btn-bisnis" onclick="setKategori('bisnis')" style="flex:1;padding:10px;border-radius:11px;border:none;background:transparent">Bisnis</button><button id="btn-acara" onclick="setKategori('acara')" style="flex:1;padding:10px;border-radius:11px;border:none;background:transparent">Acara</button></div>
+<div id="list-muda">
+<div style="background:var(--card);border:1.5px solid #34c759;border-radius:28px;padding:22px;margin-bottom:16px;box-shadow:var(--shadow);position:relative"><div style="position:absolute;top:14px;right:14px;background:#34c759;color:#fff;font-size:11px;padding:6px 11px;border-radius:999px;font-weight:700">PALING LARIS</div><b>PAKET ANAK MUDA</b><div style="height:96px;border-radius:20px;background:linear-gradient(135deg,#000,#333);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;margin:14px 0 6px">✨ LINK BIO AESTHETIC ✨</div><div><span style="text-decoration:line-through;color:var(--muted)">Rp 50.000</span><div style="font-size:34px;font-weight:800">Rp 15.000 <span style="font-size:12px;background:#ff3b30;color:#fff;padding:4px 7px;border-radius:7px">HEMAT 70%</span></div><div style="font-size:13px;color:var(--muted)">Cuma 15 ribu, dibikinin manual, jadi hari ini</div></div><ul style="color:var(--muted);font-size:14.5px;line-height:1.7"><li><b style="color:var(--text)">Foto + Nama + Bio Gaul</b></li><li><b style="color:var(--text)">4 Link:</b> WA, IG, TikTok, Spotify</li><li><b style="color:var(--text)">Tombol WA Gede</b></li><li>1 Foto + Lagu • Link S.id</li></ul><button class="btn btn-green" onclick="pilihPaket('muda','PAKET ANAK MUDA - 15k','15000')">Pesan Ini - 15k 🚀</button></div>
+<div style="background:var(--card);border:.5px solid var(--border);border-radius:28px;padding:22px;margin-bottom:16px;box-shadow:var(--shadow)"><b>PAKET ANAK MUDA PRO</b><div style="height:96px;border-radius:20px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;margin:14px 0 6px">🔥 BISA DI-INSTALL 🔥</div><div style="font-size:34px;font-weight:800">Rp 25.000</div><ul style="color:var(--muted);font-size:14.5px;line-height:1.7"><li>Semua di 15k</li><li><b style="color:var(--text)">✅ BISA DI-INSTALL</b></li><li>Galeri 6 Foto + Countdown</li></ul><button class="btn btn-dark" onclick="pilihPaket('muda','PAKET ANAK MUDA PRO - 25k','25000')">Pesan Ini - 25k</button></div>
+</div>
+<div id="list-bisnis" style="display:none">
+<div style="background:var(--card);border:1.5px solid #34c759;border-radius:28px;padding:22px;margin-bottom:16px;box-shadow:var(--shadow)"><b>PAKET BISNIS</b><div style="height:96px;border-radius:20px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;margin:14px 0 6px">🛒 TOKO ONLINE KECIL 🛒</div><div style="font-size:34px;font-weight:800">Rp 35.000</div><ul style="color:var(--muted);font-size:14.5px;line-height:1.7"><li><b style="color:var(--text)">Foto Toko + Nama + Deskripsi</b></li><li><b style="color:var(--text)">Tombol WA Order</b></li><li>Menu 6-10 + Harga • Maps + Jam Buka • ✅ BISA DI-INSTALL</li></ul><button class="btn btn-green" onclick="pilihPaket('bisnis','PAKET BISNIS - 35k','35000')">Pesan Ini - 35k 🚀</button></div>
+<div style="background:var(--card);border:.5px solid var(--border);border-radius:28px;padding:22px;margin-bottom:16px;box-shadow:var(--shadow)"><b>PAKET TOKO PRO</b><div style="height:96px;border-radius:20px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;margin:14px 0 6px">💎 TOKO PRO 💎</div><div style="font-size:34px;font-weight:800">Rp 75.000</div><ul style="color:var(--muted);font-size:14.5px;line-height:1.7"><li>Semua di Bisnis</li><li><b style="color:var(--text)">Keranjang + Total Otomatis</b></li><li>Produk sampe 20</li></ul><button class="btn btn-dark" onclick="pilihPaket('bisnis','PAKET TOKO PRO - 75k','75000')">Pesan Ini - 75k</button></div>
+</div>
+<div id="list-acara" style="display:none">
+<div style="background:var(--card);border:1.5px solid #34c759;border-radius:28px;padding:22px;margin-bottom:16px;box-shadow:var(--shadow)"><b>PAKET ACARA</b><div style="height:96px;border-radius:20px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;margin:14px 0 6px">💌 UNDANGAN DIGITAL 💌</div><div style="font-size:34px;font-weight:800">Rp 25.000</div><ul style="color:var(--muted);font-size:14.5px;line-height:1.7"><li><b style="color:var(--text)">Undangan Digital</b></li><li>Countdown + RSVP WA • Maps Lokasi</li></ul><button class="btn btn-green" onclick="pilihPaket('acara','PAKET ACARA - 25k','25000')">Pesan Ini - 25k 🚀</button></div>
+</div>
+<button class="btn btn-outline" onclick="goPage('order')">Lanjut ke Form Order →</button>
+</div>
+<div id="page-galeri" class="page">
+<div class="section-title">🎁 Galeri Karya Member</div>
+<p style="font-size:13px;color:var(--muted);margin-top:-8px">Web lu udah jadi? Pamerin disini, biar yang lain liat + bisa like ❤️</p>
+<div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:8px" id="galeriList"><p style="color:var(--muted);font-size:13px">Loading galeri...</p></div>
+<div style="background:var(--card);border:.5px solid var(--border);border-radius:18px;padding:14px;box-shadow:var(--shadow);margin-top:8px"><b style="font-size:14px">➕ Pamerin Web Lu</b><label style="font-size:13px;display:block;margin:8px 0 6px">Judul Web Lu</label><input id="galeriJudul" placeholder="cth: Link Bio Budi Keren" style="width:100%;padding:15px;border-radius:14px;border:.5px solid var(--border);background:var(--card);margin-bottom:10px"><label style="font-size:13px;display:block;margin:8px 0 6px">Link Web Lu</label><input id="galeriLink" placeholder="cth: s.id/BudiKeren" style="width:100%;padding:15px;border-radius:14px;border:.5px solid var(--border);background:var(--card);margin-bottom:10px"><button class="btn btn-green" style="padding:12px;font-size:14px" onclick="tambahGaleri()">Pamerin Sekarang 🚀 +20 Poin</button></div>
+</div>
+<div id="page-chat" class="page">
+<div class="section-title">Global Chat 💬 <span style="font-size:13px;color:var(--muted)">• <span id="chatStatus" style="color:#34c759">● Live</span></span></div>
+<div style="background:var(--card);border:.5px solid var(--border);border-radius:22px;overflow:hidden;box-shadow:var(--shadow)">
+<div style="padding:14px 16px;background:#000;color:#fff;display:flex;justify-content:space-between;align-items:center"><div><b>💬 Findz Community - Global</b><br><span style="font-size:12px;color:#aaa"><span style="color:#34c759">●</span> <span id="onlineCount">--</span> online • <span id="userRoleBadge">MEMBER</span> • <span id="userNamaLabel"></span></span></div><button onclick="logoutV10()" style="background:rgba(255,255,255,.2);color:#fff;border:none;padding:7px 12px;border-radius:999px;font-size:12px">Keluar</button></div>
+<div id="announceBar" style="display:none;background:rgba(255,204,0,.15);padding:12px 16px;font-size:13px">📢 <b id="announceText"></b> <span id="announceBy" style="color:var(--muted);font-size:11px"></span></div>
+<div id="chatList" style="height:420px;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px"><p style="text-align:center;color:var(--muted);font-size:13px">Menghubungkan ke Firebase...</p></div>
+<div id="typingBar" style="display:none;padding:6px 14px;font-size:12px;color:var(--muted);font-style:italic">...</div>
+<div id="replyBar" style="display:none;background:rgba(52,199,89,.12);padding:10px 14px;font-size:13px;border-left:3px solid #34c759;margin:0 12px;border-radius:8px">Membalas <b id="replyNama"></b>: <span id="replyTeks"></span> <span onclick="batalReply()" style="float:right;cursor:pointer;color:#FF3B30;font-weight:800">✕</span></div>
+<div style="display:flex;gap:8px;padding:12px;border-top:.5px solid var(--border)"><input id="chatInput" placeholder="Tanya apa aja... Chat = +1 poin!" style="margin:0;flex:1;padding:15px;border-radius:14px;border:.5px solid var(--border)" onkeypress="if(event.key==='Enter')kirimChatFirebase()"><button onclick="kirimChatFirebase()" style="background:var(--green);color:#fff;border:none;border-radius:12px;padding:0 18px;font-weight:800;font-size:18px">➤</button></div>
+<p style="font-size:11px;color:var(--muted);text-align:center;padding:0 12px 12px;margin:0">Aturan: No kasar, no spam. OWNER / ADMIN bisa hapus + ban.</p>
+<div id="adminPanel" style="display:none;border-top:.5px solid var(--border);padding:12px;background:rgba(255,59,48,.05)"><b style="font-size:13px">🛡️ Panel ADMIN / OWNER</b><p style="font-size:12px;color:var(--muted);margin:4px 0">Ganti role member, verifikasi, ban, pengumuman.</p><div style="display:flex;gap:8px"><input id="adminTarget" placeholder="Nama target, cth: Budi" style="margin:0;flex:1"><select id="adminRole" style="margin:0;flex:1"><option value="member">MEMBER</option><option value="verified">VERIFIED ✅</option><option value="vip">VIP 💎</option><option value="moderator">MODERATOR 🔨</option><option value="admin">ADMIN ⚔️</option><option value="superAdmin">SUPER ADMIN 🛡️</option><option value="banned">BANNED 🚫</option></select></div><button class="btn btn-dark" style="padding:10px;font-size:13px;margin-top:8px" onclick="gantiRole()">Ganti Role / Verifikasi / Ban</button><div style="display:flex;gap:8px;margin-top:8px"><input id="announceInput" placeholder="Tulis pengumuman promo..." style="margin:0;flex:1"><button onclick="kirimPengumuman()" style="background:#FFCC00;border:none;border-radius:12px;padding:0 14px;font-weight:800">📢</button></div></div>
+</div>
+</div>
+<div id="page-order" class="page">
+<div class="section-title">Form Order 📝</div>
+<div id="formInfo" style="background:var(--card);border:.5px solid var(--border);border-radius:14px;padding:13px;font-size:13px;color:var(--muted)">Form Anak Muda: Isi link sosmed + lagu favorit lu.</div>
+<label style="font-size:13px;display:block;margin:10px 0 6px">Paket Yang Dipilih</label><input id="paketFinal" readonly value="PAKET ANAK MUDA - 15k" style="width:100%;padding:15px;border-radius:14px;border:.5px solid var(--border);background:var(--card);margin-bottom:10px">
+<label style="font-size:13px;display:block;margin:10px 0 6px">Nama Kamu</label><input id="f_nama" placeholder="cth: Budi" style="width:100%;padding:15px;border-radius:14px;border:.5px solid var(--border);background:var(--card);margin-bottom:10px">
+<label style="font-size:13px;display:block;margin:10px 0 6px">No WA Kamu</label><input id="f_wa" placeholder="cth: 0821xxxx" style="width:100%;padding:15px;border-radius:14px;border:.5px solid var(--border);background:var(--card);margin-bottom:10px">
+<label style="font-size:13px;display:block;margin:10px 0 6px">Kode Afiliasi Temen Lu (Kalo Ada)</label><input id="f_ref" placeholder="cth: wahyu - kosongin kalo ga ada" style="width:100%;padding:15px;border-radius:14px;border:.5px solid var(--border);background:var(--card);margin-bottom:10px">
+<div id="form-muda">
+<label style="font-size:13px;display:block">Nama Web / Nama Gaul Lu</label><input id="m_namaWeb" placeholder="cth: Budi Ganteng" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px">
+<label style="font-size:13px;display:block">Link Instagram</label><input id="m_ig" placeholder="@budi.keren" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px">
+<label style="font-size:13px;display:block">Link TikTok</label><input id="m_tiktok" placeholder="@budi.keren" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px">
+<label style="font-size:13px;display:block">Lagu Favorit</label><input id="m_lagu" placeholder="cth: Bernadya - Satu Bulan" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px">
+<label style="font-size:13px;display:block">Warna Kesukaan</label><select id="m_warna" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px"><option>Hitam + Ijo Neon</option><option>Pink Aesthetic</option><option>Putih Bersih</option><option>Ungu Galau</option><option>Biru Langit</option></select>
+<label style="font-size:13px;display:block">Bio Singkat</label><textarea id="m_bio" rows="2" placeholder="cth: Anak Bengkulu | Hobi Gambar" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px"></textarea>
+</div>
+<div id="form-bisnis" style="display:none">
+<label style="font-size:13px;display:block">Nama Toko / Usaha</label><input id="b_namaToko" placeholder="cth: Seblak Budi" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px">
+<label style="font-size:13px;display:block">Produk / Menu + Harga</label><textarea id="b_produk" rows="3" placeholder="cth: Seblak Original 10k, Seblak Ceker 15k" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px"></textarea>
+<label style="font-size:13px;display:block">Link Google Maps</label><input id="b_maps" placeholder="Tempel link Maps" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px">
+<label style="font-size:13px;display:block">Jam Buka</label><input id="b_jam" placeholder="cth: Senin-Sabtu, 10.00 - 21.00" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px">
+</div>
+<div id="form-acara" style="display:none">
+<label style="font-size:13px;display:block">Acara Apa Nih?</label>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0"><button onclick="setAcara('Nikah',this)" style="padding:9px 14px;border-radius:999px;border:none;background:#34c759;color:#fff">💍 Nikah</button><button onclick="setAcara('Ultah',this)" style="padding:9px 14px;border-radius:999px;border:none;background:rgba(120,120,128,.12)">🎂 Ultah</button><button onclick="setAcara('Bukber',this)" style="padding:9px 14px;border-radius:999px;border:none;background:rgba(120,120,128,.12)">🌙 Bukber</button><button onclick="setAcara('Wisuda',this)" style="padding:9px 14px;border-radius:999px;border:none;background:rgba(120,120,128,.12)">🎓 Wisuda</button><button onclick="setAcara('Lainnya',this)" style="padding:9px 14px;border-radius:999px;border:none;background:rgba(120,120,128,.12)">📚 Lainnya</button></div>
+<div id="acara-Nikah"><label>Nama Pengantin</label><input id="a_nikah_nama" placeholder="Budi & Siti" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px"><label>Tanggal Nikah</label><input id="a_nikah_tgl" type="date" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px"><label>Lokasi</label><input id="a_nikah_lokasi" placeholder="Gedung Bengkulu" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px"></div>
+<div id="acara-Ultah" style="display:none"><label>Nama Yang Ultah</label><input id="a_ultah_nama" placeholder="Siti" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px"><label>Umur</label><input id="a_ultah_umur" placeholder="17 Tahun" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px"><label>Tanggal</label><input id="a_ultah_tgl" type="date" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px"></div>
+<div id="acara-Bukber" style="display:none"><label>Nama Bukber</label><input id="a_bukber_nama" placeholder="Bukber Alumni" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px"><label>Tanggal</label><input id="a_bukber_tgl" type="date" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px"><label>Lokasi</label><input id="a_bukber_lokasi" placeholder="Lokasi" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px"></div>
+<div id="acara-Wisuda" style="display:none"><label>Nama Acara</label><input id="a_wisuda_nama" placeholder="Wisuda Kelas 9" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px"><label>Tanggal</label><input id="a_wisuda_tgl" type="date" style="width:100%;padding:15px;border-radius:14px;margin-bottom:10px"></div>
+<div id="acara-Lainnya" style="display:none"><label>Ceritain Acara Lu</label><textarea id="a_lainnya" rows="3" placeholder="Acara apa? Tanggal? Dimana?" style="width:100%;padding:15px;border-radius:14px"></textarea></div>
+</div>
+<button class="btn btn-green" onclick="buatPesanan()">Buat Ringkasan & Bayar 👇</button>
+<div id="summary" style="background:#000;color:#fff;border-radius:18px;padding:16px;font-size:14px;line-height:1.6;display:none;margin-top:14px"></div>
+<div id="qrisBox" style="background:var(--card);border:1.5px dashed #34c759;border-radius:22px;padding:20px;text-align:center;display:none;margin-top:14px"><b>Bayar DP 50% via QRIS Dana</b><p style="font-size:13px;color:var(--muted)">Scan QR ini pake Dana / Gopay / OVO / M-Banking - DP 50% di awal, sisanya lunas di akhir!</p><img src="https://i.ibb.co.com/CpVgPVYC/IMG-20261105-211159.jpg" alt="QRIS Dana Findz" onclick="openQris()" style="width:100%;max-width:280px;border-radius:14px;background:#fff;padding:8px;cursor:zoom-in"><div onclick="openQris()" style="font-size:12px;color:#34c759;font-weight:700;margin-top:8px;cursor:pointer">🔍 TAP GAMBAR BUAT ZOOM</div><p><b id="totalBayar">Total: Rp 15.000</b></p><p id="dpInfo" style="font-size:12px;color:var(--muted)">DP 50%: Rp 7.500 • Sisa bayar pas web jadi: Rp 7.500</p><p style="font-size:12px;color:var(--muted)">A/n: FINDZ • Bayar sesuai DP ya</p><button class="btn btn-green" onclick="kirimBukti()">✅ Saya Sudah Bayar DP - Kirim Bukti ke WA</button></div>
+</div>
+<div id="page-faq" class="page">
+<div class="section-title">Sering Ditanya ❓</div>
+<div style="background:var(--card);border:.5px solid var(--border);border-radius:18px;padding:16px;margin-bottom:10px;font-size:14.5px;line-height:1.6;cursor:pointer" onclick="this.querySelector('p').style.display=this.querySelector('p').style.display==='block'?'none':'block'"><b>1. Kok harus login dulu?</b><p style="color:var(--muted);margin:4px 0 0;display:none">Biar community rame + ga ada akun fake yang spam. Login cuma 10 detik.</p></div>
+<div style="background:var(--card);border:.5px solid var(--border);border-radius:18px;padding:16px;margin-bottom:10px;font-size:14.5px;line-height:1.6;cursor:pointer" onclick="this.querySelector('p').style.display=this.querySelector('p').style.display==='block'?'none':'block'"><b>2. Gimana sistem ACC?</b><p style="color:var(--muted);margin:4px 0 0;display:none">Abis bayar DP, lu upload bukti, Owner cek. Kalo duit beneran masuk, Owner klik ACC, status lu jadi LAGI ANTRI. Kalo belum di-ACC, web belum dibikinin.</p></div>
+<div style="background:var(--card);border:.5px solid var(--border);border-radius:18px;padding:16px;margin-bottom:10px;font-size:14.5px;line-height:1.6;cursor:pointer" onclick="this.querySelector('p').style.display=this.querySelector('p').style.display==='block'?'none':'block'"><b>3. Afiliasi itu apa?</b><p style="color:var(--muted);margin:4px 0 0;display:none">Lu dapet link sendiri. Share link, kalo ada yang order lewat link lu, lu dapet 10K!</p></div>
+<div style="background:var(--card);border:.5px solid var(--border);border-radius:18px;padding:16px;margin-bottom:10px;font-size:14.5px;line-height:1.6;cursor:pointer" onclick="this.querySelector('p').style.display=this.querySelector('p').style.display==='block'?'none':'block'"><b>4. Badge buat apa?</b><p style="color:var(--muted);margin:4px 0 0;display:none">Newbie -> Trusted -> Pro -> Legend. Makin rajin, badge naik, makin dipercaya.</p></div>
+<div style="background:var(--card);border:.5px solid var(--border);border-radius:18px;padding:16px;margin-bottom:10px;font-size:14.5px;line-height:1.6;cursor:pointer" onclick="this.querySelector('p').style.display=this.querySelector('p').style.display==='block'?'none':'block'"><b>5. QRIS di awal apa akhir?</b><p style="color:var(--muted);margin:4px 0 0;display:none">DP 50% di awal pake QRIS, sisa 50% di akhir pas web udah jadi.</p></div>
+<button class="btn btn-green" onclick="waUmum()">Masih Bingung? Chat WA Findz 💬</button>
+<div style="text-align:center;color:var(--muted);font-size:12px;margin-top:26px;line-height:1.7">© FindzWeb V10.0.3 - Kode 15 - Bengkulu<br>WA: 0821-6948-798 • IG: @FindzWeb</div>
+</div>
+</div>
+<div style="position:fixed;bottom:0;left:0;right:0;z-index:40;background:rgba(255,255,255,.9);backdrop-filter:blur(20px);border-top:.5px solid var(--border);display:flex;max-width:430px;margin:auto;padding:8px 6px calc(8px + env(safe-area-inset-bottom))" class="bottom-nav">
+<button class="active" data-page="home" onclick="goPage('home')" style="flex:1;border:none;background:transparent;color:var(--muted);font-size:11px;font-weight:600"><span style="font-size:20px;display:block">🏠</span>Beranda</button>
+<button data-page="paket" onclick="goPage('paket')" style="flex:1;border:none;background:transparent;color:var(--muted);font-size:11px;font-weight:600"><span style="font-size:20px;display:block">📦</span>Paket</button>
+<button data-page="pesanan" onclick="goPage('pesanan')" style="flex:1;border:none;background:transparent;color:var(--muted);font-size:11px;font-weight:600"><span style="font-size:20px;display:block">📦</span>Pesanan</button>
+<button data-page="chat" onclick="goPage('chat')" style="flex:1;border:none;background:transparent;color:var(--muted);font-size:11px;font-weight:600"><span style="font-size:20px;display:block">💬</span>Chat</button>
+<button onclick="toggleSidebar(true)" style="flex:1;border:none;background:transparent;color:var(--muted);font-size:11px;font-weight:600"><span style="font-size:20px;display:block">☰</span>Menu</button>
+</div>
+<div style="position:fixed;bottom:82px;right:16px;z-index:30;background:#25D366;color:#fff;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 12px 28px rgba(0,0,0,.3);cursor:pointer" onclick="waUmum()">💬</div>
+<div id="qrisModal" style="position:fixed;inset:0;z-index:100;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;flex-direction:column;padding:20px" onclick="closeQris()"><button style="position:absolute;top:20px;right:20px;width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;border:none;font-size:18px" onclick="closeQris()">✕</button><img src="https://i.ibb.co.com/CpVgPVYC/IMG-20261105-211159.jpg" style="width:100%;max-width:380px;border-radius:18px;background:#fff;padding:12px"><p id="qrisModalTotal" style="color:#fff;font-weight:700;margin:16px 0 6px">Total: Rp 15.000</p><span style="color:#aaa;font-size:13px;text-align:center">Scan pake Dana / Gopay / OVO / M-Banking<br>Tap di luar gambar buat tutup</span></div>
+<script>
+const firebaseConfig = {apiKey:"AIzaSyA4s3wPoLwj2sAamfrKD_cOISJViA8UMWM",authDomain:"findz-4d861.firebaseapp.com",projectId:"findz-4d861",storageBucket:"findz-4d861.firebasestorage.app",messagingSenderId:"1072364364228",appId:"1:1072364364228:web:ad0221cb7314fdfb524491",measurementId:"G-D6GR4F5R89"};
+firebase.initializeApp(firebaseConfig);
+const db=firebase.firestore();
+const WA_NUMBER="628216948798";
+let kategori="muda",jenisAcara="Nikah",paketTerpilih="PAKET ANAK MUDA - 15k",hargaTerpilih="15000";
+let userV10=JSON.parse(localStorage.getItem('findz-v10-user')||'null');
+let tempFotoProfil="";
+function toggleSidebar(open){document.getElementById('sidebar').classList.toggle('open',open);document.getElementById('sidebarOverlay').classList.toggle('open',open);}
+function goPage(page){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));const t=document.getElementById('page-'+page);if(t)t.classList.add('active');document.querySelectorAll('.side-item[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));document.querySelectorAll('.bottom-nav button[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===page));toggleSidebar(false);window.scrollTo({top:0,behavior:'smooth'});}
+function getRole(nama){const n=nama.toLowerCase();if(n==='findz'||n==='findzweb'||n==='owner')return 'owner';if(['superadmin','findz2'].includes(n))return 'superAdmin';if(n==='admin'||n==='budi')return 'admin';if(n==='moderator'||n==='siti')return 'moderator';return 'member';}
+function roleLabel(role){const m={owner:'👑 OWNER',superAdmin:'🛡️ SUPER ADMIN',admin:'⚔️ ADMIN',moderator:'🔨 MODERATOR',vip:'💎 VIP',verified:'✅ VERIFIED',member:'👤 MEMBER',banned:'🚫 BANNED',sultan:'👑 SULTAN'};return m[role]||'👤 MEMBER';}
+function canDelete(role){return ['owner','superAdmin','admin','moderator'].includes(role);}
+function canManage(role){return ['owner','superAdmin'].includes(role);}
+// BADGE BARU - KODE 15
+function getBadge(poin,role){if(['owner','superAdmin'].includes(role))return {label:'👑 LEGEND',cls:'badge-legend'};if(poin>=150)return {label:'👑 LEGEND',cls:'badge-legend'};if(poin>=50)return {label:'💎 PRO',cls:'badge-pro'};if(poin>=10)return {label:'🛡️ TRUSTED',cls:'badge-trusted'};return {label:'🌱 NEWBIE',cls:'badge-newbie'};}
+function vipLabel(poin,role){if(['owner','superAdmin','admin','moderator'].includes(role))return roleLabel(role);if(poin>=150)return '👑 SULTAN';if(poin>=50)return '💎 VIP';if(role==='verified')return '✅ VERIFIED';return '👤 MEMBER';}
+function statusLabel(st){const m={menunggu:'<span class="status-pill st-menunggu">🟡 MENUNGGU ACC</span>',antri:'<span class="status-pill st-antri">🔵 SUDAH DI ACC - LAGI ANTRI</span>',dikerjain:'<span class="status-pill st-kerjain">🟠 SEDANG DIKERJAIN</span>',revisi:'<span class="status-pill st-revisi">🟣 LAGI REVISI</span>',selesai:'<span class="status-pill st-selesai">🟢 SELESAI</span>'};return m[st]||m.menunggu;}
+function toggleTheme(){const h=document.documentElement;const n=h.getAttribute('data-theme')==='dark'?'light':'dark';h.setAttribute('data-theme',n);localStorage.setItem('findz-theme',n);document.getElementById('themeBtn').textContent=n==='dark'?'☀️':'🌙';}
+(function(){const s=localStorage.getItem('findz-theme');const t=s||'dark';document.documentElement.setAttribute('data-theme',t);document.getElementById('themeBtn').textContent=t==='dark'?'☀️':'🌙';})();
+function openQris(){document.getElementById('qrisModal').style.display='flex';document.body.style.overflow='hidden';document.getElementById('qrisModalTotal').textContent=document.getElementById('totalBayar').textContent;}
+function closeQris(){document.getElementById('qrisModal').style.display='none';if(!userV10)document.body.style.overflow='hidden';else document.body.style.overflow='';}
+function setKategori(k){kategori=k;['muda','bisnis','acara'].forEach(c=>{document.getElementById('list-'+c).style.display=c===k?'block':'none';document.getElementById('form-'+c).style.display=c===k?'block':'none';document.getElementById('btn-'+c).style.background=c===k?'#fff':'transparent';document.getElementById('btn-'+c).style.fontWeight=c===k?'700':'400';});const info={muda:'Form Anak Muda: Isi link sosmed + lagu favorit lu.',bisnis:'Form Bisnis: Isi menu + harga + maps toko lu.',acara:'Form Acara: Pilih dulu Nikah / Ultah / Bukber, form langsung berubah.'};document.getElementById('formInfo').textContent=info[k];if(k==='muda')pilihPaket('muda','PAKET ANAK MUDA - 15k','15000',true);if(k==='bisnis')pilihPaket('bisnis','PAKET BISNIS - 35k','35000',true);if(k==='acara')pilihPaket('acara','PAKET ACARA - 25k','25000',true);}
+function setAcara(j,btn){jenisAcara=j;document.querySelectorAll('#form-acara button').forEach(b=>{b.style.background='rgba(120,120,128,.12)';b.style.color='var(--text)';});btn.style.background='#34c759';btn.style.color='#fff';['Nikah','Ultah','Bukber','Wisuda','Lainnya'].forEach(x=>{const el=document.getElementById('acara-'+x);if(el)el.style.display=x===j?'block':'none';});}
+function pilihPaket(kat,paket,harga,silent){if(kat!==kategori)setKategori(kat);paketTerpilih=paket;hargaTerpilih=harga;document.getElementById('paketFinal').value=paket;if(!silent)goPage('order');}
+function waUmum(){const m=`Halo Findz! 👋\nGw mau nanya tentang jasa bikin website.`;window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(m)}`,'_blank');}
+// Simpan ref dari URL ?ref=xxx
+(function(){const p=new URLSearchParams(location.search);const r=p.get('ref');if(r){localStorage.setItem('findz-ref',r.toLowerCase());try{db.collection('users').doc(r.toLowerCase()).update({afilKlik:firebase.firestore.FieldValue.increment(1)});}catch(e){}}})();
+</script>
+<script>
+async function loginV10(){const nama=document.getElementById('gateNama').value.trim();const pw=document.getElementById('gatePw').value.trim();const err=document.getElementById('gateError');if(!nama||!pw){err.style.display='block';err.textContent='Isi Nama + Password dulu!';return;}if(nama.length<3){err.style.display='block';err.textContent='Nama minimal 3 huruf!';return;}if(pw.length<4){err.style.display='block';err.textContent='PW minimal 4 karakter!';return;}err.style.display='none';try{const docRef=db.collection('users').doc(nama.toLowerCase());const doc=await docRef.get();if(doc.exists){const data=doc.data();if(data.pw!==pw){err.style.display='block';err.textContent='PW salah! Atau nama ini udah dipake orang.';return;}if(data.role==='banned'){showBannedScreen(data.nama);return;}userV10={nama:data.nama,role:data.role,isVerified:data.isVerified||false,poin:data.poin||0,photo:data.photo||''};}else{const role=getRole(nama);userV10={nama,role,isVerified:false,poin:0,photo:''};await docRef.set({nama,pw,role,isVerified:false,poin:0,photo:'',afilKlik:0,afilOrder:0,afilKomisi:0,createdAt:firebase.firestore.FieldValue.serverTimestamp()});}localStorage.setItem('findz-v10-user',JSON.stringify(userV10));unlockV10();}catch(e){err.style.display='block';err.textContent='Error Firebase: '+e.message;}}
+function logoutV10(){localStorage.removeItem('findz-v10-user');localStorage.removeItem('findz-v9-user');localStorage.removeItem('findz-v8-user');localStorage.removeItem('findz-user');sessionStorage.clear();userV10=null;const gate=document.getElementById('authGate');if(gate)gate.style.display='flex';document.body.classList.add('locked');document.body.style.overflow='hidden';const gn=document.getElementById('gateNama');const gp=document.getElementById('gatePw');if(gn)gn.value='';if(gp)gp.value='';const ge=document.getElementById('gateError');if(ge)ge.style.display='none';toggleSidebar(false);window.scrollTo({top:0});setTimeout(()=>{location.reload();},300);}
+function unlockV10(){document.getElementById('authGate').style.display='none';document.body.classList.remove('locked');document.body.style.overflow='';document.getElementById('headerUser').textContent=userV10.nama+' '+roleLabel(userV10.role)+(userV10.isVerified?' ✅':'');document.getElementById('userRoleBadge').textContent=roleLabel(userV10.role)+(userV10.isVerified?' ✅':'');document.getElementById('userNamaLabel').textContent=userV10.nama;const badge=getBadge(userV10.poin||0,userV10.role);document.getElementById('heroRole').textContent=vipLabel(userV10.poin||0,userV10.role)+(userV10.isVerified?' ✅':'');document.getElementById('f_nama').value=userV10.nama;document.getElementById('sideNama').textContent=userV10.nama;document.getElementById('sideRole').textContent=vipLabel(userV10.poin||0,userV10.role)+(userV10.isVerified?' ✅':'');document.getElementById('sideBadge').textContent=badge.label;document.getElementById('sideBadge').className='badge-pill '+badge.cls;document.getElementById('sidePoin').textContent=`⭐ Poin: ${userV10.poin||0} • ${badge.label}`;updateFotoUI();if(userV10.isVerified){document.getElementById('verifiedBadge').style.display='block';}else{document.getElementById('verifyBox').style.display='block';}if(canManage(userV10.role)){document.getElementById('adminPanel').style.display='block';document.getElementById('ownerPanelPesanan').style.display='block';}startChatFirebase();loadAnnounce();loadLeaderboard();loadGaleri();loadProfil();loadAfiliasi();loadPesanan();loadInfoGlobal();}
+function updateFotoUI(){const foto=userV10.photo||'';const img=document.getElementById('sideAvatarImg');const huruf=document.getElementById('sideAvatar');if(foto){img.src=foto;img.style.display='block';huruf.style.display='none';}else{img.style.display='none';huruf.style.display='flex';huruf.textContent=userV10.nama.charAt(0).toUpperCase();}const pImg=document.getElementById('profilFotoImg');const pHuruf=document.getElementById('profilFotoHuruf');if(pImg&&pHuruf){if(foto){pImg.src=foto;pImg.style.display='block';pHuruf.style.display='none';}else{pImg.style.display='none';pHuruf.style.display='flex';pHuruf.textContent=userV10.nama.charAt(0).toUpperCase();}}const pn=document.getElementById('profilNama');if(pn)pn.textContent=userV10.nama+(userV10.isVerified?' ✅':'');const pb=document.getElementById('profilBadge');if(pb){const b=getBadge(userV10.poin||0,userV10.role);pb.textContent=b.label;pb.className='badge-pill '+b.cls;}}
+function previewFotoProfil(input){const f=input.files[0];if(!f)return;if(f.size>2*1024*1024){alert('Foto kegedean bro! Max 2MB aja.');input.value='';return;}const r=new FileReader();r.onload=e=>{tempFotoProfil=e.target.result;const pImg=document.getElementById('profilFotoImg');const pHuruf=document.getElementById('profilFotoHuruf');pImg.src=tempFotoProfil;pImg.style.display='block';pHuruf.style.display='none';};r.readAsDataURL(f);}
+async function simpanFotoProfil(){if(!tempFotoProfil){alert('Pilih foto dulu!');return;}try{await db.collection('users').doc(userV10.nama.toLowerCase()).update({photo:tempFotoProfil});userV10.photo=tempFotoProfil;localStorage.setItem('findz-v10-user',JSON.stringify(userV10));updateFotoUI();alert('Foto profil berhasil diganti! 🔥');}catch(e){alert('Gagal: '+e.message);}}
+async function hapusFotoProfil(){if(!confirm('Hapus foto profil?'))return;try{await db.collection('users').doc(userV10.nama.toLowerCase()).update({photo:''});userV10.photo='';tempFotoProfil='';localStorage.setItem('findz-v10-user',JSON.stringify(userV10));updateFotoUI();alert('Foto dihapus, balik ke huruf awal.');}catch(e){alert('Gagal: '+e.message);}}
+function loadProfil(){const badge=getBadge(userV10.poin||0,userV10.role);document.getElementById('profilPoin').textContent=`⭐ Poin: ${userV10.poin||0} • ${badge.label}`;document.getElementById('profilStat').innerHTML=`Nama: <b>${userV10.nama}</b><br>Role: ${roleLabel(userV10.role)}<br>Badge: ${badge.label}<br>Poin: ${userV10.poin||0}<br>Status: ${userV10.isVerified?'✅ Terverifikasi':'Belum verifikasi - klik Minta Verifikasi di Beranda'}`;}
+function mintaVerifikasi(){const msg=`Halo Findz! Gw ${userV10.nama}, tolong verifikasi akun gw ya ✅\nNama akun: ${userV10.nama}`;window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`,'_blank');alert('WA kebuka!');}
+</script>
+<script>
+function loadAfiliasi(){const link=location.origin+location.pathname+'?ref='+userV10.nama.toLowerCase();document.getElementById('linkAfiliasi').textContent=link;db.collection('users').doc(userV10.nama.toLowerCase()).onSnapshot(d=>{if(!d.exists)return;const u=d.data();document.getElementById('afilKlik').textContent=u.afilKlik||0;document.getElementById('afilOrder').textContent=u.afilOrder||0;document.getElementById('afilKomisi').textContent='Rp '+(u.afilKomisi||0).toLocaleString('id-ID');});db.collection('orders').where('refBy','==',userV10.nama.toLowerCase()).onSnapshot(s=>{const box=document.getElementById('afilList');if(s.empty){box.textContent='Belum ada yang order lewat link lu. Share terus!';return;}let html='';s.forEach(doc=>{const o=doc.data();html+=`• ${o.nama} - ${o.paket} - ${statusLabel(o.status)} - Komisi: ${o.status==='selesai'?'Rp 10.000 ✅':'Menunggu ACC ⏳'}<br>`;});box.innerHTML=html;});}
+function salinLinkAfiliasi(){const link=document.getElementById('linkAfiliasi').textContent;navigator.clipboard.writeText(link).then(()=>alert('Link afiliasi disalin! Share ke WA Story! 🔥'));}
+function shareAfiliasiWA(){const link=document.getElementById('linkAfiliasi').textContent;const msg=`Woy! Bikin web cuma 15k di FindzWebs, jadi 1 hari! 🔥\nKlik link gw biar gw dapet komisi: ${link}`;window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');}
+function tarikKomisi(){db.collection('users').doc(userV10.nama.toLowerCase()).get().then(d=>{const komisi=d.data().afilKomisi||0;if(komisi<10000){alert('Komisi minimal 10K buat ditarik. Komisi lu sekarang: Rp '+komisi.toLocaleString('id-ID'));return;}const msg=`Halo Findz! Gw ${userV10.nama} mau tarik komisi afiliasi Rp ${komisi.toLocaleString('id-ID')} ke DANA gw ya. No DANA: `;window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`,'_blank');});}
+function loadLeaderboard(){db.collection('users').orderBy('poin','desc').limit(10).onSnapshot(snap=>{const list=document.getElementById('leaderList');list.innerHTML='';let rank=0;let myRank='-';snap.forEach(doc=>{rank++;const u=doc.data();const isMe=u.nama===userV10.nama;if(isMe)myRank='#'+rank;const medal=rank===1?'🥇':rank===2?'🥈':rank===3?'🥉':'#'+rank;const badge=getBadge(u.poin||0,u.role);const bg=isMe?'background:rgba(52,199,89,.12);border:1.5px solid #34c759':'';const fotoHtml=u.photo?`<img src="${u.photo}" style="width:36px;height:36px;border-radius:50%;object-fit:cover">`:`<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#000,#333);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800">${u.nama.charAt(0).toUpperCase()}</div>`;list.innerHTML+=`<div style="display:flex;align-items:center;gap:10px;background:var(--card);border:.5px solid var(--border);border-radius:16px;padding:12px;margin-bottom:8px;box-shadow:var(--shadow);${bg}"><span style="font-size:18px;width:32px;text-align:center">${medal}</span>${fotoHtml}<div style="flex:1"><b style="font-size:14px">${u.nama} ${u.isVerified?'✅':''}</b><br><span class="badge-pill ${badge.cls}" style="font-size:11px">${badge.label}</span></div><div style="text-align:right"><b style="font-size:15px;color:#FF9500">${u.poin||0} poin</b><br><span style="font-size:11px;color:var(--muted)">${rank===1?'👑 Diskon 10k!':''}</span></div></div>`;});if(snap.empty)list.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center">Belum ada member. Jadi yang pertama!</p>';document.getElementById('myPoinBox').style.display='block';document.getElementById('myPoin').textContent=userV10.poin||0;document.getElementById('myRank').textContent='Rank '+myRank;const b=getBadge(userV10.poin||0,userV10.role);document.getElementById('myVipLabel').textContent=vipLabel(userV10.poin||0,userV10.role);document.getElementById('myBadgeLabel').textContent=b.label;document.getElementById('sidePoin').textContent=`⭐ Poin: ${userV10.poin||0} • ${b.label}`;});}
+function loadGaleri(){db.collection('galeri').orderBy('likes','desc').limit(20).onSnapshot(snap=>{const box=document.getElementById('galeriList');box.innerHTML='';if(snap.empty){box.innerHTML=`<div style="min-width:200px;background:var(--card);border:.5px solid var(--border);border-radius:20px;padding:14px;box-shadow:var(--shadow)"><b>✨ Link Bio Siti</b><p style="font-size:12px;color:var(--muted)">s.id/SitiKeren • by Siti ✅</p><div style="height:80px;background:linear-gradient(135deg,#FF6B9D,#FFA07A);border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800">LINK BIO</div><p style="font-size:13px;margin:8px 0">❤️ 24 likes • Contoh</p></div>`;return;}snap.forEach(doc=>{const g=doc.data();const id=doc.id;box.innerHTML+=`<div style="min-width:200px;background:var(--card);border:.5px solid var(--border);border-radius:20px;padding:14px;box-shadow:var(--shadow)"><b>${g.judul}</b><p style="font-size:12px;color:var(--muted)">${g.link} • by ${g.by}</p><div style="height:80px;background:linear-gradient(135deg,#000,#333);border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800">WEB MEMBER</div><p style="font-size:13px;margin:8px 0">❤️ ${g.likes||0} likes</p><div style="display:flex;gap:6px"><button onclick="likeGaleri('${id}')" style="flex:1;background:rgba(255,59,48,.1);border:none;padding:8px;border-radius:10px;font-weight:700;cursor:pointer">❤️ Like</button><button onclick="window.open('https://${g.link.replace('https://','').replace('http://','')}','_blank')" style="flex:1;background:var(--green);color:#fff;border:none;padding:8px;border-radius:10px;font-weight:700;cursor:pointer">Lihat ↗</button></div></div>`;});});}
+async function tambahGaleri(){const judul=document.getElementById('galeriJudul').value.trim();const link=document.getElementById('galeriLink').value.trim();if(!judul||!link){alert('Isi judul + link dulu!');return;}try{await db.collection('galeri').add({judul,link,by:userV10.nama,likes:0,createdAt:firebase.firestore.FieldValue.serverTimestamp()});await db.collection('users').doc(userV10.nama.toLowerCase()).update({poin:firebase.firestore.FieldValue.increment(20)});document.getElementById('galeriJudul').value='';document.getElementById('galeriLink').value='';alert('Berhasil dipamerin! +20 Poin! 🔥');}catch(e){alert('Error: '+e.message);}}
+async function likeGaleri(id){try{await db.collection('galeri').doc(id).update({likes:firebase.firestore.FieldValue.increment(1)});}catch(e){}}
+</script>
+<script>
+function ambilDetail(){const nama=document.getElementById('f_nama').value.trim();const wa=document.getElementById('f_wa').value.trim();const refBy=(document.getElementById('f_ref').value.trim().toLowerCase()||localStorage.getItem('findz-ref')||'');let detail="";if(kategori==='muda'){detail=`Nama Web: ${document.getElementById('m_namaWeb').value}\nIG: ${document.getElementById('m_ig').value}\nTikTok: ${document.getElementById('m_tiktok').value}\nLagu: ${document.getElementById('m_lagu').value}\nWarna: ${document.getElementById('m_warna').value}\nBio: ${document.getElementById('m_bio').value}`;}else if(kategori==='bisnis'){detail=`Nama Toko: ${document.getElementById('b_namaToko').value}\nProduk: ${document.getElementById('b_produk').value}\nMaps: ${document.getElementById('b_maps').value}\nJam: ${document.getElementById('b_jam').value}`;}else{if(jenisAcara==='Nikah')detail=`Acara: Nikah 💍\nPengantin: ${document.getElementById('a_nikah_nama').value}\nTanggal: ${document.getElementById('a_nikah_tgl').value}\nLokasi: ${document.getElementById('a_nikah_lokasi').value}`;if(jenisAcara==='Ultah')detail=`Acara: Ultah 🎂\nNama: ${document.getElementById('a_ultah_nama').value}\nUmur: ${document.getElementById('a_ultah_umur').value}\nTanggal: ${document.getElementById('a_ultah_tgl').value}`;if(jenisAcara==='Bukber')detail=`Acara: Bukber 🌙\nNama: ${document.getElementById('a_bukber_nama').value}\nTanggal: ${document.getElementById('a_bukber_tgl').value}\nLokasi: ${document.getElementById('a_bukber_lokasi').value}`;if(jenisAcara==='Wisuda')detail=`Acara: Wisuda 🎓\nNama: ${document.getElementById('a_wisuda_nama').value}\nTanggal: ${document.getElementById('a_wisuda_tgl').value}`;if(jenisAcara==='Lainnya')detail=`Acara: Lainnya\nDetail: ${document.getElementById('a_lainnya').value}`;}return {nama,wa,detail,refBy};}
+function buatPesanan(){const {nama,wa,detail,refBy}=ambilDetail();if(!nama){alert('Isi dulu Nama Kamu ya!');return;}const total='Rp '+Number(hargaTerpilih).toLocaleString('id-ID');const dp=Math.round(Number(hargaTerpilih)/2);const s=document.getElementById('summary');s.style.display='block';s.innerHTML=`<b>📋 RINGKASAN PESANAN - KODE 15</b><br>Nama: ${nama}<br>WA: ${wa||'-'}<br>Paket: ${paketTerpilih}<br>Ref Afiliasi: ${refBy||'- (ga ada)'}<br><br>${detail.replaceAll('\n','<br>')}<br><b>Total: ${total} | DP 50%: Rp ${dp.toLocaleString('id-ID')} | Sisa: Rp ${(Number(hargaTerpilih)-dp).toLocaleString('id-ID')}</b><br><span style="font-size:12px;color:#FFCC00">⚠️ Bayar DP dulu, Owner ACC, baru web dibikinin. Kalo belum di-ACC, status lu MENUNGGU ACC.</span>`;document.getElementById('totalBayar').textContent='Total: '+total;document.getElementById('dpInfo').textContent=`DP 50%: Rp ${dp.toLocaleString('id-ID')} • Sisa bayar pas web jadi: Rp ${(Number(hargaTerpilih)-dp).toLocaleString('id-ID')}`;document.getElementById('qrisBox').style.display='block';document.getElementById('qrisBox').scrollIntoView({behavior:'smooth'});window._order={nama,wa,detail,total,paket:paketTerpilih,harga:hargaTerpilih,refBy};}
+async function kirimBukti(){const o=window._order;if(!o){alert('Isi form dulu!');return;}try{await db.collection('orders').add({nama:o.nama,wa:o.wa,paket:o.paket,harga:Number(o.harga),detail:o.detail,refBy:o.refBy||'',status:'menunggu',infoOwner:'Menunggu ACC dari Owner. Sabar ya, Owner lagi ngecek bukti bayar lu.',by:userV10.nama,createdAt:firebase.firestore.FieldValue.serverTimestamp()});if(o.refBy&&o.refBy!==userV10.nama.toLowerCase()){await db.collection('users').doc(o.refBy).update({afilOrder:firebase.firestore.FieldValue.increment(1)});}await db.collection('users').doc(userV10.nama.toLowerCase()).update({poin:firebase.firestore.FieldValue.increment(50)});alert('Order tersimpan! +50 Poin! 🔥 Status: MENUNGGU ACC. Kirim bukti ke WA ya!');}catch(e){alert('Gagal simpan order ke Firebase, tetep kirim ke WA aja: '+e.message);}const msg=`Halo Findz! Gw UDAH BAYAR DP nih ✅\n\nNama: ${o.nama}\nWA: ${o.wa}\nPaket: ${o.paket}\nTotal: ${o.total}\nRef Afiliasi: ${o.refBy||'-'}\n\n--- DETAIL ---\n${o.detail}\n\nBukti gw lampirin di bawah ya. Tolong ACC ya!`;window.open(`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`,'_blank');goPage('pesanan');}
+function loadPesanan(){db.collection('orders').where('by','==',userV10.nama).orderBy('createdAt','desc').limit(20).onSnapshot(s=>{const box=document.getElementById('pesananList');if(s.empty){box.innerHTML='<p style="color:var(--muted);font-size:13px;text-align:center">Belum ada pesanan. Yuk order dulu!</p>';return;}let html='';s.forEach(doc=>{const o=doc.data();html+=`<div style="background:var(--card);border:.5px solid var(--border);border-radius:20px;padding:16px;margin-bottom:12px;box-shadow:var(--shadow)"><div style="display:flex;justify-content:space-between;align-items:center"><b>${o.paket}</b>${statusLabel(o.status)}</div><p style="font-size:13px;color:var(--muted);margin:8px 0">Nama: ${o.nama} • Total: Rp ${(o.harga||0).toLocaleString('id-ID')}</p><div style="background:rgba(255,204,0,.12);border-radius:12px;padding:10px;font-size:13px"><b>📢 INFO OWNER:</b><br>${o.infoOwner||'Belum ada info.'}</div><p style="font-size:12px;color:var(--muted);margin-top:8px;white-space:pre-line">${o.detail||''}</p></div>`;});box.innerHTML=html;});if(canManage(userV10.role)){db.collection('orders').orderBy('createdAt','desc').limit(20).onSnapshot(s=>{const box=document.getElementById('pesananList');let html='<p style="font-size:12px;color:#FF3B30;font-weight:700">👑 MODE OWNER - LIAT SEMUA ORDERAN:</p>';s.forEach(doc=>{const o=doc.data();html+=`<div style="background:var(--card);border:1px solid #FF3B30;border-radius:20px;padding:16px;margin-bottom:12px"><div style="display:flex;justify-content:space-between"><b>${o.paket} - ${o.nama}</b>${statusLabel(o.status)}</div><p style="font-size:13px">WA: ${o.wa} • Ref: ${o.refBy||'-'} • Total: Rp ${(o.harga||0).toLocaleString('id-ID')}</p><p style="font-size:13px;background:#FFF3CD;padding:10px;border-radius:10px"><b>Info ke dia:</b> ${o.infoOwner||'-'}</p><p style="font-size:12px;white-space:pre-line">${o.detail||''}</p></div>`;});box.innerHTML=html;});}}
+async function ownerUpdatePesanan(){const target=document.getElementById('ownerTargetPesanan').value.trim();const statusBaru=document.getElementById('ownerStatusBaru').value;const info=document.getElementById('ownerInfoText').value.trim();if(!target){alert('Isi nama pembeli dulu!');return;}try{const snap=await db.collection('orders').where('nama','==',target).orderBy('createdAt','desc').limit(1).get();if(snap.empty){alert('Orderan '+target+' ga ketemu!');return;}const docId=snap.docs[0].id;const oldData=snap.docs[0].data();await db.collection('orders').doc(docId).update({status:statusBaru,infoOwner:info||oldData.infoOwner});if(statusBaru==='selesai'&&oldData.refBy){await db.collection('users').doc(oldData.refBy).update({afilKomisi:firebase.firestore.FieldValue.increment(10000),poin:firebase.firestore.FieldValue.increment(30)});alert(target+' SELESAI! Afiliasi '+oldData.refBy+' dapet 10K + 30 poin! 🔥');}else{alert('Status '+target+' diubah jadi '+statusBaru+'! Info terkirim ke HP dia.');}document.getElementById('ownerInfoText').value='';}catch(e){alert('Error: '+e.message);}}
+async function ownerUpdateInfoGlobal(){const teks=document.getElementById('ownerInfoGlobal').value.trim();if(!teks)return;await db.collection('config').doc('infoOwner').set({teks,by:userV10.nama,at:firebase.firestore.FieldValue.serverTimestamp()});alert('Info Global terkirim ke semua member!');}
+async function ownerUpdateToko(){const st=document.getElementById('ownerTokoStatus').value;await db.collection('config').doc('toko').set({status:st,by:userV10.nama});alert('Toko sekarang: '+st.toUpperCase());}
+function loadInfoGlobal(){db.collection('config').doc('infoOwner').onSnapshot(doc=>{if(doc.exists&&doc.data().teks){document.getElementById('infoOwnerBox').style.display='block';document.getElementById('infoOwnerText').textContent=doc.data().teks;document.getElementById('infoOwnerBy').textContent='• by '+doc.data().by;}});db.collection('config').doc('toko').onSnapshot(doc=>{if(doc.exists&&doc.data().status==='tutup'){document.getElementById('tokoTutupBanner').style.display='block';}else{const b=document.getElementById('tokoTutupBanner');if(b)b.style.display='none';}});}
+</script>
+<script>
+let replyKe=null;
+let typingTimeout=null;
+function showBannedScreen(nama){localStorage.removeItem('findz-v10-user');userV10=null;const gate=document.getElementById('authGate');gate.style.display='flex';document.body.classList.add('locked');gate.innerHTML=`<div style="background:#1c1c1e;border-radius:28px;padding:26px;width:100%;max-width:380px;text-align:center"><div style="font-size:50px">🚫</div><h2 style="color:#fff;margin:10px 0 6px">Akun Di-BAN</h2><p style="color:#aaa;font-size:14px;line-height:1.6;margin:0">Halo <b style="color:#fff">${nama||'Kamu'}</b>, akun kamu di-ban oleh OWNER / ADMIN karena melanggar aturan.</p><button class="btn btn-green" style="margin-top:18px" onclick="window.open('https://wa.me/628216948798?text=${encodeURIComponent('Halo Findz, akun gw '+(nama||'')+' ke-ban, tolong buka ya')}', '_blank')">💬 Minta Buka Ban ke WA Findz</button><button class="btn btn-outline" style="margin-top:8px;background:#2c2c2e;color:#fff;border:none" onclick="cobaLoginLain()">🔄 Login Akun Lain</button></div>`;}
+function cobaLoginLain(){localStorage.removeItem('findz-v10-user');userV10=null;location.reload();}
+function formatJam(c){if(c.createdAt&&c.createdAt.toDate){const d=c.createdAt.toDate();const jam=d.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Jakarta'});if(d.toDateString()!==new Date().toDateString()){return d.toLocaleDateString('id-ID',{day:'numeric',month:'short'})+' '+jam;}return jam;}return c.waktu||'Baru';}
+function replyChat(nama,teks){replyKe={nama,teks:teks.substring(0,60)};document.getElementById('replyBar').style.display='block';document.getElementById('replyNama').textContent=nama;document.getElementById('replyTeks').textContent=teks.substring(0,60);document.getElementById('chatInput').focus();}
+function batalReply(){replyKe=null;document.getElementById('replyBar').style.display='none';}
+function onKetik(){db.collection('typing').doc(userV10.nama.toLowerCase()).set({nama:userV10.nama,at:firebase.firestore.FieldValue.serverTimestamp()});clearTimeout(typingTimeout);typingTimeout=setTimeout(()=>{db.collection('typing').doc(userV10.nama.toLowerCase()).delete();},2000);}
+function startChatFirebase(){
+  db.collection('users').onSnapshot(s=>{document.getElementById('onlineCount').textContent=s.size+8;document.getElementById('heroOnline').textContent=s.size+8;});
+  db.collection('typing').onSnapshot(s=>{const bar=document.getElementById('typingBar');let ygNgetik=[];s.forEach(doc=>{const t=doc.data();if(t.nama!==userV10.nama)ygNgetik.push(t.nama);});if(ygNgetik.length>0){bar.style.display='block';bar.textContent=ygNgetik.join(', ')+' sedang mengetik... ✍️';}else{bar.style.display='none';}});
+  db.collection('chats').orderBy('createdAt','asc').limit(100).onSnapshot(snapshot=>{
+    const list=document.getElementById('chatList');list.innerHTML='';
+    if(snapshot.empty){list.innerHTML='<p style="text-align:center;color:var(--muted);font-size:13px">Belum ada chat. Jadi yang pertama chat! 🔥</p>';db.collection('chats').add({nama:'Findz',role:'owner',teks:'Halo semua! Selamat datang di Findz Community V10.0.3 🔥',waktu:'Baru',createdAt:firebase.firestore.FieldValue.serverTimestamp()});return;}
+    snapshot.forEach(doc=>{
+      const c=doc.data();const id=doc.id;const isMe=c.nama===userV10.nama;
+      const warna=c.role==='owner'?'#FF3B30':c.role==='superAdmin'?'#FF9500':c.role==='admin'?'#FF9500':'#8a8a8e';
+      const badge=roleLabel(c.role)+(c.isVerified?' ✅':'');
+      const btnHapus=canDelete(userV10.role)?`<span onclick="hapusChatFirebase('${id}')" style="font-size:11px;color:#FF3B30;cursor:pointer;margin-left:6px">Hapus</span>`:'';
+      const btnBan=(userV10.role==='owner')&&!isMe?`<span onclick="banUser('${c.nama}')" style="font-size:11px;color:#FF3B30;cursor:pointer;margin-left:6px">Ban</span>`:'';
+      const fotoHtml=c.photo?`<img src="${c.photo}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;vertical-align:middle"> `:'';
+      const jamTampil=formatJam(c);
+      const replyHtml=c.reply?`<div style="background:rgba(0,0,0,.12);border-left:3px solid #FFCC00;padding:6px 8px;border-radius:8px;font-size:12px;margin-bottom:4px;opacity:.9"><b>Membalas ${c.reply.nama}:</b> ${c.reply.teks}</div>`:'';
+      const teksEsc=c.teks.replace(/'/g,"\\'");
+      list.innerHTML+=`<div onclick="replyChat('${c.nama}','${teksEsc}')" style="align-self:${isMe?'flex-end':'flex-start'};max-width:85%;background:${isMe?'#34c759':'var(--bg)'};color:${isMe?'#fff':'var(--text)'};padding:10px 12px;border-radius:16px;border-bottom-${isMe?'right':'left'}-radius:4px;cursor:pointer"><div style="font-size:11px;font-weight:700;opacity:.8">${fotoHtml}${isMe?'Kamu':c.nama} <span style="color:${warna}">${badge}</span> • ${jamTampil} ${btnHapus}${btnBan}</div>${replyHtml}<div style="font-size:14px;margin-top:2px">${c.teks}</div><div style="font-size:10px;opacity:.6;margin-top:4px">Tap buat balas ↩️</div></div>`;
+    });
+    list.scrollTop=list.scrollHeight;
+  },err=>{document.getElementById('chatList').innerHTML='<p style="text-align:center;color:#ff3b30;font-size:13px">Gagal connect: '+err.message+'</p>';});
+}
+async function kirimChatFirebase(){
+  const inp=document.getElementById('chatInput');const teks=inp.value.trim();if(!teks)return;
+  if(userV10.role==='banned'){showBannedScreen(userV10.nama);return;}
+  const kasar=['anjing','bangsat','tolol','goblok','kontol','memek'];let bersih=teks;kasar.forEach(k=>{bersih=bersih.split(k).join('***');});
+  try{
+    const now=new Date();const jamWIB=now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',timeZone:'Asia/Jakarta'});
+    await db.collection('chats').add({nama:userV10.nama,role:userV10.role,isVerified:userV10.isVerified||false,photo:userV10.photo||'',teks:bersih,waktu:jamWIB,reply:replyKe||null,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+    await db.collection('users').doc(userV10.nama.toLowerCase()).update({poin:firebase.firestore.FieldValue.increment(1)});
+    await db.collection('typing').doc(userV10.nama.toLowerCase()).delete();
+    inp.value='';batalReply();
+    setTimeout(()=>{const l=document.getElementById('chatList');if(l)l.scrollTop=l.scrollHeight;},200);
+  }catch(e){alert('Gagal kirim: '+e.message);}
+}
+async function hapusChatFirebase(id){if(!confirm('Hapus chat ini?'))return;await db.collection('chats').doc(id).delete();}
+async function banUser(nama){if(userV10.role!=='owner'){alert('Cuma OWNER yang bisa BAN!');return;}if(!confirm('Ban '+nama+'?'))return;await db.collection('users').doc(nama.toLowerCase()).update({role:'banned'});alert(nama+' di-ban!');}
+async function gantiRole(){const target=document.getElementById('adminTarget').value.trim();const newRole=document.getElementById('adminRole').value;if(!target){alert('Isi nama target dulu!');return;}try{const docRef=db.collection('users').doc(target.toLowerCase());const doc=await docRef.get();if(!doc.exists){alert('User '+target+' belum ketemu! Suruh dia login dulu.');return;}const isVerified=(newRole==='verified'||newRole==='vip')?true:doc.data().isVerified||false;const finalRole=newRole==='verified'?doc.data().role:newRole;await docRef.update({role:finalRole,isVerified:isVerified});alert(target+' sekarang jadi '+roleLabel(finalRole)+(isVerified?' ✅':'')+'!');}catch(e){alert('Error: '+e.message);}}
+async function kirimPengumuman(){const teks=document.getElementById('announceInput').value.trim();if(!teks)return;await db.collection('config').doc('announce').set({teks,by:userV10.nama,at:firebase.firestore.FieldValue.serverTimestamp()});document.getElementById('announceInput').value='';alert('Pengumuman terkirim ke semua member!');}
+function loadAnnounce(){db.collection('config').doc('announce').onSnapshot(doc=>{if(doc.exists&&doc.data().teks){document.getElementById('announceBar').style.display='block';document.getElementById('announceText').textContent=doc.data().teks;document.getElementById('announceBy').textContent='• by '+doc.data().by;}});}
+window.addEventListener('storage',function(e){if(e.key==='findz-v10-user'&&!e.newValue){location.reload();}});
+if(userV10){db.collection('users').doc(userV10.nama.toLowerCase()).get().then(doc=>{if(doc.exists){const d=doc.data();if(d.role==='banned'){showBannedScreen(d.nama);return;}userV10={nama:d.nama,role:d.role,isVerified:d.isVerified||false,poin:d.poin||0,photo:d.photo||''};localStorage.setItem('findz-v10-user',JSON.stringify(userV10));}unlockV10();}).catch(()=>{unlockV10();});}else{document.body.classList.add('locked');}
+document.addEventListener('DOMContentLoaded',()=>{const inp=document.getElementById('chatInput');if(inp) inp.addEventListener('input',()=>{if(userV10) onKetik();});});
+</script>
+<script>
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+</body>
+</html>
